@@ -1,0 +1,30 @@
+---
+  ### ---------------------------------------------------------------------------
+  ### APSTRA API AUTOMATION
+  ### ---------------------------------------------------------------------------
+  - hosts: localhost
+    gather_facts: False
+    connection: local
+    roles:
+      - { role: apstra_auth }
+      - { role: get_bp_id }
+
+    tasks:
+    - name: Initialize Variables
+      set_fact: 
+        leaf_ids: ""
+
+    - name: "Create connectivity template"
+      uri:
+        url: "{{ apstra.baseurl }}/blueprints/{{ bp_id }}/obj-policy-import"
+        method: PUT
+        status_code: 204
+        headers:
+          content-type: "application/json"
+          AUTHTOKEN: "{{ login.json.token }}"
+        validate_certs: false
+        force_basic_auth: yes
+        body: "{{ lookup('ansible.builtin.template','templates/connectivity-template.j2') }}"
+        body_format: json
+      ignore_errors: yes
+
